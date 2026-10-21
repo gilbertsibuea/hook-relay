@@ -1,0 +1,49 @@
+spring:
+  application:
+    name: delivery-worker
+  datasource:
+    url: ${HOOKRELAY_DB_URL:jdbc:postgresql://localhost:5433/hookrelay}
+    username: ${HOOKRELAY_DB_USER:hookrelay}
+    password: ${HOOKRELAY_DB_PASSWORD:hookrelay}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    # Schema ownership lives in ingestion-api for Milestone 0.
+    enabled: false
+
+  data:
+    redis:
+      host: ${HOOKRELAY_REDIS_HOST:localhost}
+      port: ${HOOKRELAY_REDIS_PORT:6379}
+  kafka:
+    bootstrap-servers: ${HOOKRELAY_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+server:
+  port: ${HOOKRELAY_DELIVERY_PORT:8081}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+logging:
+  level:
+    root: INFO
+    dev.hookrelay: INFO

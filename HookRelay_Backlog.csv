@@ -1,0 +1,41 @@
+ID,Epic,Task,Priority,Estimate_hours,Dependencies,Acceptance_Criteria
+HR-001,Foundation,Create Maven multi-module repository and wrapper,P0,3,None,Fresh clone builds with Java 21 and pinned Spring Boot version
+HR-002,Foundation,Pin Docker images and create local Compose stack,P0,4,HR-001,PostgreSQL Redis Kafka KRaft start with health checks
+HR-003,Foundation,Setup GitHub Actions build and test,P0,3,HR-001,CI executes clean verify and uploads test reports
+HR-004,Foundation,Create initial architecture diagram and ADRs,P0,3,HR-001,At least Kafka outbox and at-least-once decisions documented
+HR-005,Data,Create Flyway schema for tenants keys endpoints events idempotency outbox,P0,5,HR-001,Schema migrates from empty database and has required unique constraints
+HR-006,Auth,Implement tenant provisioning command/seed,P0,2,HR-005,Development tenant can be provisioned without public unauthenticated endpoint
+HR-007,Auth,Implement API key generation hashing and authentication,P0,5,HR-005;HR-006,Valid key resolves tenant and raw key is never persisted
+HR-008,Endpoint,Implement endpoint create/list/update/deactivate,P0,5,HR-007,CRUD is tenant-scoped and never returns stored signing secret
+HR-009,Security,Implement URL validation and SSRF checks baseline,P0,5,HR-008,Loopback private link-local metadata and invalid schemes are rejected
+HR-010,Ingestion,Implement event request validation and size limit,P0,3,HR-007,Valid JSON is accepted and malformed/oversized requests receive proper 4xx
+HR-011,Ingestion,Implement transactional idempotent event ingestion,P0,7,HR-005;HR-007;HR-010,Same key and same payload return same event ID; mismatched payload returns 409
+HR-012,Outbox,Implement outbox relay to Kafka,P0,6,HR-002;HR-011,Pending records publish and relay resumes safely after restart
+HR-013,Routing,Implement event accepted consumer and endpoint fan-out,P0,6,HR-008;HR-012,Only subscribed endpoints receive one delivery row per event endpoint pair
+HR-014,Delivery,Create deliveries attempts and delivery command outbox schema,P0,4,HR-005;HR-013,Delivery persistence includes status and unique event endpoint constraint
+HR-015,Delivery,Implement scheduler safe claims leases and recovery,P0,7,HR-014,Concurrent workers do not actively claim same delivery and stale leases recover
+HR-016,Delivery,Implement outbound HTTP client and timeout controls,P0,4,HR-015,Timeouts and response cap are enforced and redirects are disabled
+HR-017,Security,Implement HMAC signature generation and receiver example,P0,5,HR-016,Receiver validates raw-body signature and timestamp; tampering fails
+HR-018,Retry,Implement retry classification backoff jitter and Retry-After,P0,6,HR-015;HR-016,Transient errors schedule durable retries without sleeping worker threads
+HR-019,Retry,Implement DLQ state and manual replay,P0,5,HR-018,Max attempts sends delivery to DLQ and replay preserves prior attempts
+HR-020,Testing,Add unit and integration tests for core lifecycle,P0,8,HR-011;HR-012;HR-019,Tests cover idempotency outbox fan-out signature retry and DLQ
+HR-021,RateLimit,Implement Redis token bucket per tenant,P1,5,HR-002;HR-007,Concurrent over-limit requests receive 429 and Retry-After
+HR-022,Resilience,Implement circuit breaker with shared Redis coordination,P1,8,HR-002;HR-015,Repeated endpoint failures open breaker and half-open probes are limited
+HR-023,Resilience,Implement per-endpoint bulkhead/concurrency isolation,P1,5,HR-016;HR-022,Slow endpoint does not exhaust capacity for healthy endpoint
+HR-024,Security,Implement API key rotation/revocation and encrypted endpoint secret,P1,6,HR-007;HR-008,Revoked key is rejected and signing secret is encrypted at rest
+HR-025,Admin,Implement GraphQL event delivery and endpoint queries,P1,6,HR-014;HR-008,Queries paginate and all resources are tenant-scoped
+HR-026,Admin,Implement GraphQL replay pause and resume mutations,P1,5,HR-019;HR-025,Mutation validates ownership/state and records audit information
+HR-027,Retention,Implement configurable retention job,P1,4,HR-005;HR-014,Expired payload data is cleaned per policy without unintended audit deletion
+HR-028,Observability,Add Micrometer metrics and health/readiness,P1,5,HR-001;HR-012;HR-019,Prometheus can scrape key ingestion outbox queue and delivery metrics
+HR-029,Observability,Setup Prometheus and Grafana dashboards,P1,4,HR-028,Dashboards show latency errors backlog retries DLQ and resources
+HR-030,Observability,Add structured logs correlation IDs and trace propagation,P1,6,HR-012;HR-016;HR-028,Trace can be followed across ingestion Kafka and delivery worker
+HR-031,Testing,Add tenant isolation SSRF and secret redaction tests,P1,5,HR-009;HR-024;HR-025,Security regression suite runs in CI
+HR-032,LoadTest,Create k6 ingestion benchmark,P1,4,HR-011;HR-028,Raw results include latency throughput errors and environment details
+HR-033,LoadTest,Run worker scaling benchmark 1 vs 3 instances,P1,5,HR-019;HR-032,Same workload is executed and results are reported honestly
+HR-034,Chaos,Add receiver outage and worker kill tests,P1,6,HR-020;HR-028,No accepted event disappears from durable accounting in defined scenarios
+HR-035,CI,Add dependency scan secret scan and coverage report,P1,4,HR-003;HR-020,Pipeline reports findings and enforces documented gating policy
+HR-036,Infra,Implement Terraform dev environment,P1,8,HR-002;HR-028,Terraform fmt validate and plan pass with documented provider/configuration
+HR-037,Docs,Write English README and API/signature documentation,P1,5,HR-017;HR-025;HR-032,Fresh clone quick start and examples are verified
+HR-038,Ops,Write outage and DLQ runbooks,P1,3,HR-019;HR-029,Runbooks give actionable diagnosis and recovery steps
+HR-039,Release,Run final acceptance matrix and record evidence,P1,5,HR-031;HR-033;HR-034;HR-037,All P0/P1 criteria pass or have explicit exception notes
+HR-040,Stretch,Create receiver SDK examples in another language,P2,6,HR-037,Example verifies signature and deduplicates event ID

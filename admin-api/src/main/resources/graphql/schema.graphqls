@@ -1,0 +1,4 @@
+"""Bootstrap schema. Milestone 4 expands tenant-scoped queries and mutations."""
+type Query {
+  health: String!
+}

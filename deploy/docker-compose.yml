@@ -1,0 +1,125 @@
+name: hookrelay
+
+services:
+  postgres:
+    image: postgres:16.15-alpine
+    container_name: hookrelay-postgres
+    environment:
+      POSTGRES_DB: ${HOOKRELAY_DB_NAME:-hookrelay}
+      POSTGRES_USER: ${HOOKRELAY_DB_USER:-hookrelay}
+      POSTGRES_PASSWORD: ${HOOKRELAY_DB_PASSWORD:-hookrelay}
+    ports:
+      - "${HOOKRELAY_DB_PORT:-5433}:5432"
+    volumes:
+      - hookrelay_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - hookrelay
+
+  redis:
+    image: redis:7.4.11-alpine
+    container_name: hookrelay-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${HOOKRELAY_REDIS_PORT:-6379}:6379"
+    volumes:
+      - hookrelay_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks:
+      - hookrelay
+
+  kafka:
+    image: apache/kafka:4.1.2
+    container_name: hookrelay-kafka
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    ports:
+      - "${HOOKRELAY_KAFKA_PORT:-29092}:29092"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 20s
+    networks:
+      - hookrelay
+
+  prometheus:
+    image: prom/prometheus:v3.5.5
+    container_name: hookrelay-prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+    ports:
+      - "${HOOKRELAY_PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - hookrelay_prometheus_data:/prometheus
+    depends_on:
+      - postgres
+    networks:
+      - hookrelay
+
+  grafana:
+    image: grafana/grafana:11.6.16
+    container_name: hookrelay-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${HOOKRELAY_GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${HOOKRELAY_GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    ports:
+      - "${HOOKRELAY_GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - hookrelay_grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - hookrelay
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.139.0
+    container_name: hookrelay-otel-collector
+    command: ["--config=/etc/otelcol/config.yaml"]
+    ports:
+      - "${HOOKRELAY_OTEL_GRPC_PORT:-4317}:4317"
+      - "${HOOKRELAY_OTEL_HTTP_PORT:-4318}:4318"
+    volumes:
+      - ./otel/otel-collector-config.yaml:/etc/otelcol/config.yaml:ro
+    networks:
+      - hookrelay
+
+networks:
+  hookrelay:
+    name: hookrelay-net
+
+volumes:
+  hookrelay_pg_data:
+  hookrelay_redis_data:
+  hookrelay_prometheus_data:
+  hookrelay_grafana_data:
