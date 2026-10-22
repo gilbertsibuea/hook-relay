@@ -2,7 +2,7 @@
 
 Multi-tenant webhook delivery platform (Package A). Clients ingest events over REST; HookRelay stores them durably in PostgreSQL, relays work through Kafka, and delivers signed HTTP webhooks with retry, DLQ, and admin visibility.
 
-> Status: **Milestone 0 bootstrap complete**. Domain features are intentionally not implemented yet.
+> Status: **Milestone 1 in progress** — schema, tenant provisioning, and API key auth are available.
 
 ## Tech stack (pinned)
 
@@ -42,7 +42,17 @@ Or use Make:
 make bootstrap
 make verify
 make infra-up
+make provision-tenant NAME="Dev Tenant"
 ```
+
+Provision prints the raw API key **once**. Authenticate with:
+
+```http
+X-API-Key: <raw-api-key>
+GET /v1/me
+```
+
+There is no public HTTP endpoint for tenant provisioning (CLI only).
 
 Infra health endpoints:
 
@@ -64,8 +74,8 @@ Infra health endpoints:
 - Do not commit API keys, signing secrets, or encryption keys.
 - CI runs build/test plus Gitleaks secret scanning.
 
-## Known limitations (current bootstrap)
+## Known limitations (current)
 
-- Business APIs, auth, delivery, GraphQL domain schema, and Terraform environments are not implemented yet.
-- Application containers are not yet added to Compose; Milestone 1+ will wire runnable services.
+- Endpoint CRUD, event ingestion, delivery worker, GraphQL domain schema, and Terraform environments are not implemented yet.
+- Application containers are not yet added to Compose.
 - Benchmark numbers are intentionally absent until measured.

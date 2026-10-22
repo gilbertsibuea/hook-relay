@@ -4,12 +4,12 @@ Track progress by flipping `[ ]` ↔ `[x]`.
 Source of truth for scope remains `HookRelay_Final_Project_Spec.md`.
 
 **Last updated:** 2026-10-22  
-**Current milestone focus:** Milestone 1 — secure ingestion (schema done → tenant/API key next)
+**Current milestone focus:** Milestone 1 — secure ingestion (auth done → endpoint CRUD next)
 
 | Status | Count |
 |---|---:|
-| Done | 5 |
-| Remaining P0 | 15 |
+| Done | 7 |
+| Remaining P0 | 13 |
 | Remaining P1 | 19 |
 | Stretch P2 | 1 |
 
@@ -63,12 +63,14 @@ Source of truth for scope remains `HookRelay_Final_Project_Spec.md`.
 
 ## Auth
 
-- [ ] **HR-006** · P0 · ~2h · Implement tenant provisioning command/seed  
+- [x] **HR-006** · P0 · ~2h · Implement tenant provisioning command/seed  
   - **Deps:** HR-005  
+  - **Done:** CLI `provision-tenant` + `make provision-tenant` / `scripts/provision-tenant.sh`; no public HTTP provision endpoint; raw key printed once to stdout  
   - **AC:** Development tenant can be provisioned without a public unauthenticated endpoint
 
-- [ ] **HR-007** · P0 · ~5h · Implement API key generation, hashing, and authentication  
+- [x] **HR-007** · P0 · ~5h · Implement API key generation, hashing, and authentication  
   - **Deps:** HR-005, HR-006  
+  - **Done:** `hr_live_` key gen, SHA-256(+pepper) hash storage, `X-API-Key` filter, `GET /v1/me`, revoked/invalid → 401  
   - **AC:** Valid key resolves tenant; raw key is never persisted
 
 ---
@@ -280,10 +282,10 @@ Source of truth for scope remains `HookRelay_Final_Project_Spec.md`.
 
 ## Suggested next slice (Milestone 1)
 
-1. **HR-006** / **HR-007** — tenant seed + API key auth  
-2. **HR-008** / **HR-009** — endpoint CRUD + SSRF baseline  
-3. **HR-010** / **HR-011** — idempotent ingestion + `202` contract  
-4. **HR-012** — outbox relay to Kafka  
+1. **HR-008** / **HR-009** — endpoint CRUD + SSRF baseline  
+2. **HR-010** / **HR-011** — idempotent ingestion + `202` contract  
+3. **HR-012** — outbox relay to Kafka  
+4. **HR-013** — fan-out routing 
 
 ---
 

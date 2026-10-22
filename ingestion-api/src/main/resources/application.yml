@@ -42,7 +42,13 @@ management:
     readinessstate:
       enabled: true
 
+hookrelay:
+  api-key:
+    # Optional pepper mixed into API key hashes. Changing it invalidates existing keys.
+    pepper: ${HOOKRELAY_API_KEY_PEPPER:}
+
 logging:
   level:
     root: INFO
     dev.hookrelay: INFO
+
