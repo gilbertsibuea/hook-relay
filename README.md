@@ -54,6 +54,21 @@ GET /v1/me
 
 There is no public HTTP endpoint for tenant provisioning (CLI only).
 
+Create a webhook endpoint (signing secret returned once; never in list/get):
+
+```bash
+curl -sS -X POST http://localhost:8080/v1/endpoints \
+  -H "X-API-Key: <raw-api-key>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Order service",
+    "url": "https://receiver.example.com/hooks/hookrelay",
+    "subscribedEventTypes": ["payment.succeeded"]
+  }'
+```
+
+Set `HOOKRELAY_ENDPOINT_SECRET_KEY` in `.env` before running ingestion-api.
+
 Infra health endpoints:
 
 - PostgreSQL: `localhost:5433` (host port; container still listens on 5432)
@@ -76,6 +91,7 @@ Infra health endpoints:
 
 ## Known limitations (current)
 
-- Endpoint CRUD, event ingestion, delivery worker, GraphQL domain schema, and Terraform environments are not implemented yet.
+- Event ingestion, delivery worker, GraphQL domain schema, and Terraform environments are not implemented yet.
+- Full SSRF hardening for endpoint URLs is still pending (HR-009).
 - Application containers are not yet added to Compose.
 - Benchmark numbers are intentionally absent until measured.

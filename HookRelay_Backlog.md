@@ -4,12 +4,12 @@ Track progress by flipping `[ ]` ↔ `[x]`.
 Source of truth for scope remains `HookRelay_Final_Project_Spec.md`.
 
 **Last updated:** 2026-10-22  
-**Current milestone focus:** Milestone 1 — secure ingestion (auth done → endpoint CRUD next)
+**Current milestone focus:** Milestone 1 — secure ingestion (endpoints done → SSRF / event ingestion next)
 
 | Status | Count |
 |---|---:|
-| Done | 7 |
-| Remaining P0 | 13 |
+| Done | 8 |
+| Remaining P0 | 12 |
 | Remaining P1 | 19 |
 | Stretch P2 | 1 |
 
@@ -77,8 +77,9 @@ Source of truth for scope remains `HookRelay_Final_Project_Spec.md`.
 
 ## Endpoint
 
-- [ ] **HR-008** · P0 · ~5h · Implement endpoint create/list/update/deactivate  
+- [x] **HR-008** · P0 · ~5h · Implement endpoint create/list/update/deactivate  
   - **Deps:** HR-007  
+  - **Done:** REST CRUD under `/v1/endpoints`; AES-GCM encrypted signing secret shown once on create; list/get/patch omit secret; soft-delete via DELETE; tenant isolation tests  
   - **AC:** CRUD is tenant-scoped and never returns stored signing secret
 
 ---
@@ -282,7 +283,7 @@ Source of truth for scope remains `HookRelay_Final_Project_Spec.md`.
 
 ## Suggested next slice (Milestone 1)
 
-1. **HR-008** / **HR-009** — endpoint CRUD + SSRF baseline  
+1. **HR-009** — SSRF URL validation baseline  
 2. **HR-010** / **HR-011** — idempotent ingestion + `202` contract  
 3. **HR-012** — outbox relay to Kafka  
 4. **HR-013** — fan-out routing 

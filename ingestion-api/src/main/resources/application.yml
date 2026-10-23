@@ -46,6 +46,10 @@ hookrelay:
   api-key:
     # Optional pepper mixed into API key hashes. Changing it invalidates existing keys.
     pepper: ${HOOKRELAY_API_KEY_PEPPER:}
+  endpoint-secret:
+    # Base64-encoded 32-byte AES key. Required to start ingestion-api.
+    key-base64: ${HOOKRELAY_ENDPOINT_SECRET_KEY}
+    key-id: ${HOOKRELAY_ENDPOINT_SECRET_KEY_ID:local-v1}
 
 logging:
   level:

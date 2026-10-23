@@ -4,6 +4,8 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import dev.hookrelay.common.security.AesGcmSecretEncryptor;
+
 /**
  * Shared Testcontainers PostgreSQL wiring for ingestion-api tests.
  */
@@ -26,6 +28,10 @@ public final class PostgresTestcontainers {
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("hookrelay.api-key.pepper", () -> "test-pepper");
+        registry.add(
+                "hookrelay.endpoint-secret.key-base64",
+                AesGcmSecretEncryptor::fixedTestKeyBase64);
+        registry.add("hookrelay.endpoint-secret.key-id", () -> "test-v1");
         registry.add("spring.autoconfigure.exclude",
                 () -> String.join(",",
                         "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration",
