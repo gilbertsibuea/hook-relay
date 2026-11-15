@@ -9,9 +9,14 @@ import org.springframework.context.annotation.Configuration;
 import dev.hookrelay.common.security.AesGcmSecretEncryptor;
 import dev.hookrelay.common.security.ApiKeyGenerator;
 import dev.hookrelay.common.security.ApiKeyHasher;
+import dev.hookrelay.common.security.WebhookUrlValidator;
 
 @Configuration
-@EnableConfigurationProperties({ApiKeyProperties.class, EndpointSecretProperties.class})
+@EnableConfigurationProperties({
+        ApiKeyProperties.class,
+        EndpointSecretProperties.class,
+        SsrfProperties.class
+})
 public class SecurityBeansConfig {
 
     @Bean
@@ -27,6 +32,11 @@ public class SecurityBeansConfig {
     @Bean
     AesGcmSecretEncryptor aesGcmSecretEncryptor(EndpointSecretProperties properties) {
         return AesGcmSecretEncryptor.fromBase64Key(properties.getKeyBase64(), properties.getKeyId());
+    }
+
+    @Bean
+    WebhookUrlValidator webhookUrlValidator() {
+        return new WebhookUrlValidator();
     }
 
     @Bean

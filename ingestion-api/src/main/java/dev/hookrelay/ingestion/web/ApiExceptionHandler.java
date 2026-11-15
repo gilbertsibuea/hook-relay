@@ -7,14 +7,16 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import dev.hookrelay.common.security.WebhookUrlValidationException;
+import dev.hookrelay.ingestion.apikey.ApiKeyNotFoundException;
 import dev.hookrelay.ingestion.endpoint.EndpointNotFoundException;
 import dev.hookrelay.ingestion.endpoint.InvalidEndpointRequestException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
-    @ExceptionHandler(EndpointNotFoundException.class)
-    ResponseEntity<ProblemBody> handleNotFound(EndpointNotFoundException ex) {
+    @ExceptionHandler({EndpointNotFoundException.class, ApiKeyNotFoundException.class})
+    ResponseEntity<ProblemBody> handleNotFound(RuntimeException ex) {
         return problem(
                 HttpStatus.NOT_FOUND,
                 "https://hookrelay.dev/problems/not-found",
@@ -22,7 +24,11 @@ public class ApiExceptionHandler {
                 ex.getMessage());
     }
 
-    @ExceptionHandler({InvalidEndpointRequestException.class, IllegalArgumentException.class})
+    @ExceptionHandler({
+            InvalidEndpointRequestException.class,
+            WebhookUrlValidationException.class,
+            IllegalArgumentException.class
+    })
     ResponseEntity<ProblemBody> handleBadRequest(RuntimeException ex) {
         return problem(
                 HttpStatus.BAD_REQUEST,

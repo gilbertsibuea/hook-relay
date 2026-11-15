@@ -1,0 +1,4 @@
+hookrelay:
+  ssrf:
+    # Production: webhook endpoints must use HTTPS.
+    allow-http: false

@@ -34,9 +34,18 @@ public final class PostgresTestcontainers {
         registry.add("hookrelay.endpoint-secret.key-id", () -> "test-v1");
         registry.add("spring.autoconfigure.exclude",
                 () -> String.join(",",
+                        // Spring Boot 4 Redis packages
+                        "org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration",
+                        "org.springframework.boot.data.redis.autoconfigure.DataRedisRepositoriesAutoConfiguration",
+                        "org.springframework.boot.data.redis.autoconfigure.DataRedisReactiveAutoConfiguration",
+                        "org.springframework.boot.data.redis.autoconfigure.health.DataRedisHealthContributorAutoConfiguration",
+                        "org.springframework.boot.data.redis.autoconfigure.health.DataRedisReactiveHealthContributorAutoConfiguration",
+                        // Legacy names kept for safety
                         "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration",
                         "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration",
                         "org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration",
                         "org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration"));
+        // Avoid readiness/health failing when Redis/Kafka are intentionally excluded in tests.
+        registry.add("management.health.redis.enabled", () -> "false");
     }
 }

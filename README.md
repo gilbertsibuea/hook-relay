@@ -92,6 +92,6 @@ Infra health endpoints:
 ## Known limitations (current)
 
 - Event ingestion, delivery worker, GraphQL domain schema, and Terraform environments are not implemented yet.
-- Full SSRF hardening for endpoint URLs is still pending (HR-009).
+- GraphQL admin domain schema and delivery worker are still pending.
 - Application containers are not yet added to Compose.
 - Benchmark numbers are intentionally absent until measured.

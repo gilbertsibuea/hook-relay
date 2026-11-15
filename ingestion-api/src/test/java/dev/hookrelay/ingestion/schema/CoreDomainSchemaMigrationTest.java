@@ -56,7 +56,8 @@ class CoreDomainSchemaMigrationTest {
                 "endpoint_subscriptions",
                 "events",
                 "idempotency_keys",
-                "outbox")));
+                "outbox",
+                "audit_events")));
 
         Set<String> indexes = loadIndexNames();
         assertTrue(indexes.contains("uq_api_keys_key_hash"));
@@ -114,11 +115,11 @@ class CoreDomainSchemaMigrationTest {
     }
 
     @Test
-    void flywayVersionIsApplied() {
+    void flywayVersionsAreApplied() {
         Integer versionCount = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM flyway_schema_history WHERE version = '1' AND success = TRUE",
+                "SELECT COUNT(*) FROM flyway_schema_history WHERE version IN ('1', '2') AND success = TRUE",
                 Integer.class);
-        assertEquals(1, versionCount);
+        assertEquals(2, versionCount);
     }
 
     private Set<String> loadPublicTables() throws SQLException {

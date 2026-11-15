@@ -3,14 +3,14 @@
 Track progress by flipping `[ ]` ↔ `[x]`.  
 Source of truth for scope remains `HookRelay_Final_Project_Spec.md`.
 
-**Last updated:** 2026-10-22  
-**Current milestone focus:** Milestone 1 — secure ingestion (endpoints done → SSRF / event ingestion next)
+**Last updated:** 2026-11-15  
+**Current milestone focus:** Milestone 1 — secure ingestion (security batch done → event ingestion next)
 
 | Status | Count |
 |---|---:|
-| Done | 8 |
-| Remaining P0 | 12 |
-| Remaining P1 | 19 |
+| Done | 11 |
+| Remaining P0 | 11 |
+| Remaining P1 | 17 |
 | Stretch P2 | 1 |
 
 ---
@@ -86,16 +86,20 @@ Source of truth for scope remains `HookRelay_Final_Project_Spec.md`.
 
 ## Security
 
-- [ ] **HR-009** · P0 · ~5h · Implement URL validation and SSRF checks baseline  
+- [x] **HR-009** · P0 · ~5h · Implement URL validation and SSRF checks baseline  
   - **Deps:** HR-008  
+  - **Done:** `WebhookUrlValidator` rejects userinfo, non-http(s), blocked hosts, loopback/private/link-local/multicast/ULA/metadata after DNS resolve; `prod` profile forces HTTPS-only  
   - **AC:** Loopback, private, link-local, metadata, and invalid schemes are rejected
 
-- [ ] **HR-024** · P1 · ~6h · Implement API key rotation/revocation and encrypted endpoint secret  
+- [x] **HR-024** · P1 · ~6h · Implement API key rotation/revocation and encrypted endpoint secret  
   - **Deps:** HR-007, HR-008  
+  - **Done:** `POST /v1/api-keys/rotate`, `POST /v1/api-keys/{id}/revoke`, `GET /v1/api-keys`; audit_events (V2); AES-GCM endpoint secrets already from HR-008  
   - **AC:** Revoked key is rejected; signing secret is encrypted at rest
 
-- [ ] **HR-031** · P1 · ~5h · Add tenant isolation, SSRF, and secret redaction tests  
+- [x] **HR-031** · P1 · ~5h · Add tenant isolation, SSRF, and secret redaction tests  
   - **Deps:** HR-009, HR-024, HR-025  
+  - **Done:** `SecurityRegressionTest` covers revoke/rotate, cross-tenant endpoint/key access, SSRF URL matrix, encrypted-at-rest + toString redaction  
+  - **Note:** GraphQL cross-tenant cases still pending until **HR-025**  
   - **AC:** Security regression suite runs in CI
 
 ---
@@ -283,10 +287,10 @@ Source of truth for scope remains `HookRelay_Final_Project_Spec.md`.
 
 ## Suggested next slice (Milestone 1)
 
-1. **HR-009** — SSRF URL validation baseline  
-2. **HR-010** / **HR-011** — idempotent ingestion + `202` contract  
-3. **HR-012** — outbox relay to Kafka  
-4. **HR-013** — fan-out routing 
+1. **HR-010** / **HR-011** — idempotent ingestion + `202` contract  
+2. **HR-012** — outbox relay to Kafka  
+3. **HR-013** — fan-out routing  
+4. **HR-014** / **HR-015** — delivery schema + scheduler 
 
 ---
 

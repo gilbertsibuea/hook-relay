@@ -1,6 +1,5 @@
 package dev.hookrelay.ingestion.endpoint;
 
-import java.net.URI;
 import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Instant;
@@ -17,6 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dev.hookrelay.common.security.AesGcmSecretEncryptor;
 import dev.hookrelay.common.security.EncryptedSecret;
+import dev.hookrelay.common.security.WebhookUrlValidationException;
+import dev.hookrelay.common.security.WebhookUrlValidator;
+import dev.hookrelay.ingestion.config.SsrfProperties;
 
 @Service
 public class EndpointService {
@@ -24,6 +26,8 @@ public class EndpointService {
     private final EndpointRepository endpointRepository;
     private final EndpointSubscriptionRepository subscriptionRepository;
     private final AesGcmSecretEncryptor secretEncryptor;
+    private final WebhookUrlValidator webhookUrlValidator;
+    private final SsrfProperties ssrfProperties;
     private final SecureRandom secureRandom;
     private final Clock clock;
 
@@ -31,11 +35,15 @@ public class EndpointService {
             EndpointRepository endpointRepository,
             EndpointSubscriptionRepository subscriptionRepository,
             AesGcmSecretEncryptor secretEncryptor,
+            WebhookUrlValidator webhookUrlValidator,
+            SsrfProperties ssrfProperties,
             SecureRandom secureRandom,
             Clock clock) {
         this.endpointRepository = endpointRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.secretEncryptor = secretEncryptor;
+        this.webhookUrlValidator = webhookUrlValidator;
+        this.ssrfProperties = ssrfProperties;
         this.secureRandom = secureRandom;
         this.clock = clock;
     }
@@ -201,31 +209,12 @@ public class EndpointService {
         return name.trim();
     }
 
-    /**
-     * Baseline URL checks for HR-008. Full SSRF hardening is HR-009.
-     */
-    private static String requireUrl(String url) {
-        if (url == null || url.isBlank()) {
-            throw new InvalidEndpointRequestException("url must not be blank");
-        }
-        String trimmed = url.trim();
-        final URI uri;
+    private String requireUrl(String url) {
         try {
-            uri = URI.create(trimmed);
-        } catch (IllegalArgumentException ex) {
-            throw new InvalidEndpointRequestException("url must be a valid URI");
+            return webhookUrlValidator.validate(url, ssrfProperties.isAllowHttp());
+        } catch (WebhookUrlValidationException ex) {
+            throw new InvalidEndpointRequestException(ex.getReason());
         }
-        if (uri.getScheme() == null || uri.getHost() == null) {
-            throw new InvalidEndpointRequestException("url must be an absolute http(s) URI");
-        }
-        String scheme = uri.getScheme().toLowerCase();
-        if (!scheme.equals("https") && !scheme.equals("http")) {
-            throw new InvalidEndpointRequestException("url scheme must be http or https");
-        }
-        if (uri.getUserInfo() != null) {
-            throw new InvalidEndpointRequestException("url must not contain userinfo");
-        }
-        return trimmed;
     }
 
     private static List<String> normalizeEventTypes(List<String> subscribedEventTypes) {

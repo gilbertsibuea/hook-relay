@@ -70,7 +70,7 @@ class EndpointCrudIntegrationTest {
                         .content("""
                                 {
                                   "name": "Order service",
-                                  "url": "https://receiver.example.com/hooks/hookrelay",
+                                  "url": "https://example.com/hooks/hookrelay",
                                   "subscribedEventTypes": ["payment.succeeded", "order.cancelled"]
                                 }
                                 """))

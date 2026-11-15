@@ -1,5 +1,6 @@
 package dev.hookrelay.ingestion.apikey;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -11,6 +12,10 @@ import org.springframework.data.repository.query.Param;
 public interface ApiKeyRepository extends JpaRepository<ApiKeyEntity, UUID> {
 
     Optional<ApiKeyEntity> findByKeyHash(String keyHash);
+
+    List<ApiKeyEntity> findByTenantIdOrderByCreatedAtDesc(UUID tenantId);
+
+    Optional<ApiKeyEntity> findByIdAndTenantId(UUID id, UUID tenantId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
