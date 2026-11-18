@@ -3,13 +3,13 @@
 Track progress by flipping `[ ]` ↔ `[x]`.  
 Source of truth for scope remains `HookRelay_Final_Project_Spec.md`.
 
-**Last updated:** 2026-11-15  
-**Current milestone focus:** Milestone 1 — secure ingestion (security batch done → event ingestion next)
+**Last updated:** 2026-11-18  
+**Current milestone focus:** Milestone 1 — routing / delivery (ingestion + outbox done → fan-out next)
 
 | Status | Count |
 |---|---:|
-| Done | 11 |
-| Remaining P0 | 11 |
+| Done | 14 |
+| Remaining P0 | 8 |
 | Remaining P1 | 17 |
 | Stretch P2 | 1 |
 
@@ -106,20 +106,23 @@ Source of truth for scope remains `HookRelay_Final_Project_Spec.md`.
 
 ## Ingestion
 
-- [ ] **HR-010** · P0 · ~3h · Implement event request validation and size limit  
+- [x] **HR-010** · P0 · ~3h · Implement event request validation and size limit  
   - **Deps:** HR-007  
+  - **Done:** `EventController` `POST /v1/events`; validates `type`/`payload`/`Idempotency-Key`; enforces `hookrelay.ingestion.max-payload-bytes` → `413`  
   - **AC:** Valid JSON accepted; malformed/oversized requests receive proper 4xx
 
-- [ ] **HR-011** · P0 · ~7h · Implement transactional idempotent event ingestion  
+- [x] **HR-011** · P0 · ~7h · Implement transactional idempotent event ingestion  
   - **Deps:** HR-005, HR-007, HR-010  
+  - **Done:** `EventIngestionService` writes `events` + `idempotency_keys` + `outbox` atomically; same key/payload → `202` replay; mismatch → `409`; concurrent race replays after TX rollback  
   - **AC:** Same key + same payload → same event ID; mismatched payload → 409
 
 ---
 
 ## Outbox
 
-- [ ] **HR-012** · P0 · ~6h · Implement outbox relay to Kafka  
+- [x] **HR-012** · P0 · ~6h · Implement outbox relay to Kafka  
   - **Deps:** HR-002, HR-011  
+  - **Done:** `OutboxRelayService` `@Scheduled` publishes pending rows via `KafkaOutboxMessagePublisher` to `hookrelay.events.accepted`; failures bump attempts and resume on next tick  
   - **AC:** Pending records publish; relay resumes safely after restart
 
 ---
@@ -287,10 +290,9 @@ Source of truth for scope remains `HookRelay_Final_Project_Spec.md`.
 
 ## Suggested next slice (Milestone 1)
 
-1. **HR-010** / **HR-011** — idempotent ingestion + `202` contract  
-2. **HR-012** — outbox relay to Kafka  
-3. **HR-013** — fan-out routing  
-4. **HR-014** / **HR-015** — delivery schema + scheduler 
+1. **HR-013** — fan-out routing from `event.accepted`  
+2. **HR-014** / **HR-015** — delivery schema + scheduler  
+3. **HR-016** — signed HTTP delivery attempts 
 
 ---
 

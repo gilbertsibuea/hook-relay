@@ -15,7 +15,9 @@ import dev.hookrelay.common.security.WebhookUrlValidator;
 @EnableConfigurationProperties({
         ApiKeyProperties.class,
         EndpointSecretProperties.class,
-        SsrfProperties.class
+        SsrfProperties.class,
+        IngestionProperties.class,
+        OutboxProperties.class
 })
 public class SecurityBeansConfig {
 

@@ -32,6 +32,7 @@ public final class PostgresTestcontainers {
                 "hookrelay.endpoint-secret.key-base64",
                 AesGcmSecretEncryptor::fixedTestKeyBase64);
         registry.add("hookrelay.endpoint-secret.key-id", () -> "test-v1");
+        registry.add("hookrelay.outbox.relay-enabled", () -> "false");
         registry.add("spring.autoconfigure.exclude",
                 () -> String.join(",",
                         // Spring Boot 4 Redis packages

@@ -25,6 +25,10 @@ spring:
 
 server:
   port: ${HOOKRELAY_INGESTION_PORT:8080}
+  tomcat:
+    # Bound HTTP body size slightly above configured payload limit for headers/envelope.
+    max-http-form-post-size: 300KB
+    max-swallow-size: 300KB
 
 management:
   endpoints:
@@ -53,6 +57,14 @@ hookrelay:
   ssrf:
     # Allow http:// webhook URLs in local/dev. Profile "prod" sets this to false.
     allow-http: ${HOOKRELAY_ALLOW_HTTP:true}
+  ingestion:
+    max-payload-bytes: ${HOOKRELAY_MAX_PAYLOAD_BYTES:262144}
+    event-retention-days: ${HOOKRELAY_EVENT_RETENTION_DAYS:30}
+  outbox:
+    relay-enabled: ${HOOKRELAY_OUTBOX_RELAY_ENABLED:true}
+    batch-size: ${HOOKRELAY_OUTBOX_BATCH_SIZE:50}
+    poll-interval-ms: ${HOOKRELAY_OUTBOX_POLL_INTERVAL_MS:1000}
+    events-accepted-topic: ${HOOKRELAY_EVENTS_ACCEPTED_TOPIC:hookrelay.events.accepted}
 
 logging:
   level:
